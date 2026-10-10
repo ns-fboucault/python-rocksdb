@@ -34,7 +34,11 @@ except pkgconfig.PackageNotFoundError:
     }
 
 if platform.system() == 'Darwin':
-    extra_compile_args += ['-mmacosx-version-min=10.9', '-stdlib=libc++']
+    # -mmacosx-version-min/-stdlib=libc++ are clang-only flags: passing them to
+    # g++ breaks its C++ header search path (<string_view> not found).
+    compiler = (os.environ.get('CXX') or os.environ.get('CC') or '').lower()
+    if 'gcc' not in compiler:
+        extra_compile_args += ['-mmacosx-version-min=10.9', '-stdlib=libc++']
 
 if platform.system() == 'Windows':
     extra_compile_args.remove('-Wextra')
